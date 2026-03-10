@@ -15,6 +15,14 @@ export default function TemplatesPage() {
   const [selectedPreview, setSelectedPreview] = useState<TemplateInfo | null>(
     null,
   );
+  const [paymentStep, setPaymentStep] = useState<
+    "info" | "form" | "processing" | "success"
+  >("info");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,6 +41,12 @@ export default function TemplatesPage() {
   const handleSelectTemplate = async (template: TemplateInfo) => {
     if (template.isPaid && !user.isPremium) {
       setSelectedPreview(template);
+      setPaymentStep("info");
+      setCardNumber("");
+      setCardExpiry("");
+      setCardCvc("");
+      setCardName("");
+      setPaymentError("");
       return;
     }
 
@@ -61,16 +75,73 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleUpgrade = async () => {
+  const formatCardNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 16);
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  };
+
+  const formatExpiry = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 4);
+    if (digits.length >= 3) {
+      return digits.slice(0, 2) + " / " + digits.slice(2);
+    }
+    return digits;
+  };
+
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPaymentError("");
+
+    const digitsOnly = cardNumber.replace(/\s/g, "");
+    if (digitsOnly.length < 16) {
+      setPaymentError("Please enter a valid 16-digit card number");
+      return;
+    }
+
+    const expiryDigits = cardExpiry.replace(/\D/g, "");
+    if (expiryDigits.length < 4) {
+      setPaymentError("Please enter a valid expiry date (MM/YY)");
+      return;
+    }
+    const month = parseInt(expiryDigits.slice(0, 2));
+    if (month < 1 || month > 12) {
+      setPaymentError("Invalid expiry month");
+      return;
+    }
+
+    if (cardCvc.replace(/\D/g, "").length < 3) {
+      setPaymentError("Please enter a valid 3-digit CVC");
+      return;
+    }
+
+    if (cardName.trim().length < 2) {
+      setPaymentError("Please enter the cardholder name");
+      return;
+    }
+
+    setPaymentStep("processing");
+
+    await new Promise((r) => setTimeout(r, 2500));
+
     setUpgrading(true);
     try {
       await upgradeToPremium();
+      setPaymentStep("success");
+      await new Promise((r) => setTimeout(r, 2000));
       setSelectedPreview(null);
+      setPaymentStep("info");
     } catch {
-      alert("Upgrade failed");
+      setPaymentStep("form");
+      setPaymentError("Payment failed. Please try again.");
     } finally {
       setUpgrading(false);
     }
+  };
+
+  const closeModal = () => {
+    setSelectedPreview(null);
+    setPaymentStep("info");
+    setPaymentError("");
   };
 
   return (
@@ -183,86 +254,363 @@ export default function TemplatesPage() {
 
       {selectedPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="card max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Upgrade to Premium
-            </h2>
-            <p className="mt-2 text-gray-500 text-sm">
-              The {selectedPreview.name} template is a premium template. Upgrade
-              your account to unlock all premium templates and features.
-            </p>
-            <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-200">
-              <h3 className="font-semibold text-amber-800">Premium Benefits</h3>
-              <ul className="mt-2 space-y-2 text-sm text-amber-700">
-                <li className="flex items-center gap-2">
+          <div className="card max-w-lg w-full overflow-hidden">
+            {paymentStep === "processing" && (
+              <div className="p-12 flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p className="mt-4 text-lg font-semibold text-gray-900">
+                  Processing payment...
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Please do not close this window
+                </p>
+              </div>
+            )}
+
+            {paymentStep === "success" && (
+              <div className="p-12 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
                   >
                     <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Access to all premium templates
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                </div>
+                <p className="mt-4 text-lg font-semibold text-gray-900">
+                  Payment successful
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Premium templates are now unlocked
+                </p>
+              </div>
+            )}
+
+            {paymentStep === "info" && (
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Upgrade to Premium
+                  </h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <p className="mt-2 text-gray-500 text-sm">
+                  Unlock the {selectedPreview.name} template and all premium
+                  features with a one-time payment.
+                </p>
+
+                <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Premium Plan
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Lifetime access
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-gray-900">$0.00</p>
+                      <p className="text-xs text-green-600 font-medium">
+                        FREE for demo
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <svg
+                        className="w-4 h-4 text-green-600 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-gray-700">
+                        All premium templates unlocked
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <svg
+                        className="w-4 h-4 text-green-600 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-gray-700">
+                        Executive layouts and designs
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <svg
+                        className="w-4 h-4 text-green-600 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-gray-700">
+                        Future template updates included
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <svg
+                        className="w-4 h-4 text-green-600 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-gray-700">
+                        Priority support
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setPaymentStep("form")}
+                  className="mt-6 btn-primary w-full py-3 text-sm"
+                >
+                  Proceed to Checkout
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="mt-2 w-full text-sm text-gray-500 hover:text-gray-700 py-2 transition-colors"
+                >
+                  Maybe later
+                </button>
+              </div>
+            )}
+
+            {paymentStep === "form" && (
+              <div>
+                <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">Secure Checkout</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-400">Total:</span>
+                    <span className="text-lg font-bold">$0.00</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handlePaymentSubmit} className="p-6 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      Payment Details
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentStep("info")}
+                      className="text-xs text-blue-600 hover:text-blue-700"
+                    >
+                      Back
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Card Number
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) =>
+                          setCardNumber(formatCardNumber(e.target.value))
+                        }
+                        className="input-field pl-10"
+                        placeholder="4242 4242 4242 4242"
+                        maxLength={19}
+                      />
+                      <svg
+                        className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                        Expiry Date
+                      </label>
+                      <input
+                        type="text"
+                        value={cardExpiry}
+                        onChange={(e) =>
+                          setCardExpiry(formatExpiry(e.target.value))
+                        }
+                        className="input-field"
+                        placeholder="MM / YY"
+                        maxLength={7}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                        CVC
+                      </label>
+                      <input
+                        type="text"
+                        value={cardCvc}
+                        onChange={(e) =>
+                          setCardCvc(
+                            e.target.value.replace(/\D/g, "").slice(0, 3),
+                          )
+                        }
+                        className="input-field"
+                        placeholder="123"
+                        maxLength={3}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Cardholder Name
+                    </label>
+                    <input
+                      type="text"
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      className="input-field"
+                      placeholder="John Doe"
                     />
-                  </svg>
-                  Exclusive layouts and designs
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                  </div>
+
+                  {paymentError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                      <p className="text-sm text-red-600">{paymentError}</p>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={upgrading}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Priority support
-                </li>
-              </ul>
-            </div>
-            <div className="mt-6 flex items-center gap-3">
-              <button
-                onClick={handleUpgrade}
-                disabled={upgrading}
-                className="btn-primary flex-1 flex items-center justify-center gap-2"
-              >
-                {upgrading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Upgrading...</span>
-                  </>
-                ) : (
-                  "Upgrade Now"
-                )}
-              </button>
-              <button
-                onClick={() => setSelectedPreview(null)}
-                className="btn-secondary"
-              >
-                Cancel
-              </button>
-            </div>
-            <p className="mt-3 text-xs text-gray-400 text-center">
-              This is a simulated upgrade. No real payment is required.
-            </p>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    Pay $0.00 and Upgrade
+                  </button>
+
+                  <div className="flex items-center justify-center gap-4 pt-1">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                      <span>SSL Encrypted</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>No real charge</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-400 text-center">
+                    This is a simulated checkout. No real payment is processed.
+                    Enter any values in the fields above.
+                  </p>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}
