@@ -110,6 +110,11 @@ export default function EditorPage() {
     await saveResume(resume);
   };
 
+  const handleDone = async () => {
+    await handleSaveNow();
+    router.push("/dashboard");
+  };
+
   const handleDownloadPDF = async () => {
     if (!previewRef.current) return;
     setDownloading(true);
@@ -419,7 +424,7 @@ export default function EditorPage() {
               <button
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="btn-primary text-sm py-1.5 flex items-center gap-2"
+                className="btn-secondary text-sm py-1.5 flex items-center gap-2"
               >
                 {downloading ? (
                   <>
@@ -444,6 +449,26 @@ export default function EditorPage() {
                     <span>Download PDF</span>
                   </>
                 )}
+              </button>
+              <button
+                onClick={handleDone}
+                disabled={saving}
+                className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Done</span>
               </button>
             </div>
           </div>
