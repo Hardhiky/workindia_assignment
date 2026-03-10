@@ -5,7 +5,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import Navbar from "@/components/Navbar";
 import TemplateRenderer from "@/components/templates/TemplateRenderer";
-import { ResumeData, WorkExperienceData, EducationData, SkillData, ProjectData } from "@/lib/types";
+import {
+  ResumeData,
+  WorkExperienceData,
+  EducationData,
+  SkillData,
+  ProjectData,
+} from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -21,7 +27,9 @@ export default function EditorPage() {
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [activeTab, setActiveTab] = useState<"personal" | "experience" | "education" | "skills" | "projects">("personal");
+  const [activeTab, setActiveTab] = useState<
+    "personal" | "experience" | "education" | "skills" | "projects"
+  >("personal");
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [showTemplateSwitch, setShowTemplateSwitch] = useState(false);
 
@@ -68,12 +76,11 @@ export default function EditorPage() {
           setLastSaved(new Date());
         }
       } catch {
-        // silent fail
       } finally {
         setSaving(false);
       }
     },
-    [resumeId]
+    [resumeId],
   );
 
   const updateResume = useCallback(
@@ -90,7 +97,7 @@ export default function EditorPage() {
         return updated;
       });
     },
-    [saveResume]
+    [saveResume],
   );
 
   const handleSaveNow = async () => {
@@ -154,7 +161,10 @@ export default function EditorPage() {
     }
   };
 
-  const handleAIGenerate = async (type: "summary" | "experience" | "skills", extraContext?: Record<string, string>) => {
+  const handleAIGenerate = async (
+    type: "summary" | "experience" | "skills",
+    extraContext?: Record<string, string>,
+  ) => {
     if (!resume) return;
     setAiLoading(type);
     try {
@@ -177,7 +187,10 @@ export default function EditorPage() {
         const data = await res.json();
         if (type === "summary") {
           updateResume({ summary: data.result });
-        } else if (type === "experience" && resume.workExperiences?.length > 0) {
+        } else if (
+          type === "experience" &&
+          resume.workExperiences?.length > 0
+        ) {
           const updated = [...resume.workExperiences];
           updated[0] = { ...updated[0], description: data.result };
           updateResume({ workExperiences: updated });
@@ -186,10 +199,12 @@ export default function EditorPage() {
             .split(",")
             .map((s: string) => s.trim())
             .filter(Boolean);
-          const newSkills: SkillData[] = skillNames.map((name: string, i: number) => ({
-            name,
-            sortOrder: i,
-          }));
+          const newSkills: SkillData[] = skillNames.map(
+            (name: string, i: number) => ({
+              name,
+              sortOrder: i,
+            }),
+          );
           updateResume({ skills: newSkills });
         }
       }
@@ -219,7 +234,11 @@ export default function EditorPage() {
     updateResume({ workExperiences: updated });
   };
 
-  const updateWorkExperience = (index: number, field: keyof WorkExperienceData, value: string) => {
+  const updateWorkExperience = (
+    index: number,
+    field: keyof WorkExperienceData,
+    value: string,
+  ) => {
     if (!resume) return;
     const updated = [...resume.workExperiences];
     updated[index] = { ...updated[index], [field]: value };
@@ -245,7 +264,11 @@ export default function EditorPage() {
     updateResume({ educations: updated });
   };
 
-  const updateEducation = (index: number, field: keyof EducationData, value: string) => {
+  const updateEducation = (
+    index: number,
+    field: keyof EducationData,
+    value: string,
+  ) => {
     if (!resume) return;
     const updated = [...resume.educations];
     updated[index] = { ...updated[index], [field]: value };
@@ -291,7 +314,11 @@ export default function EditorPage() {
     updateResume({ projects: updated });
   };
 
-  const updateProject = (index: number, field: keyof ProjectData, value: string) => {
+  const updateProject = (
+    index: number,
+    field: keyof ProjectData,
+    value: string,
+  ) => {
     if (!resume) return;
     const updated = [...resume.projects];
     updated[index] = { ...updated[index], [field]: value };
@@ -335,8 +362,18 @@ export default function EditorPage() {
                 onClick={() => router.push("/dashboard")}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
                 </svg>
               </button>
               <input
@@ -361,10 +398,14 @@ export default function EditorPage() {
                 {saving
                   ? "Saving..."
                   : lastSaved
-                  ? `Saved at ${lastSaved.toLocaleTimeString()}`
-                  : ""}
+                    ? `Saved at ${lastSaved.toLocaleTimeString()}`
+                    : ""}
               </span>
-              <button onClick={handleSaveNow} disabled={saving} className="btn-secondary text-sm py-1.5">
+              <button
+                onClick={handleSaveNow}
+                disabled={saving}
+                className="btn-secondary text-sm py-1.5"
+              >
                 Save
               </button>
               <button
@@ -379,8 +420,18 @@ export default function EditorPage() {
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
                     </svg>
                     <span>Download PDF</span>
                   </>
@@ -407,8 +458,8 @@ export default function EditorPage() {
                       resume.templateId === t.id
                         ? "bg-blue-600 text-white"
                         : locked
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {t.name}
@@ -447,10 +498,14 @@ export default function EditorPage() {
           <div className="p-5">
             {activeTab === "personal" && (
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900">Personal Information</h3>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Personal Information
+                </h3>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     value={resume.fullName}
@@ -461,7 +516,9 @@ export default function EditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Email
+                  </label>
                   <input
                     type="email"
                     value={resume.email}
@@ -472,7 +529,9 @@ export default function EditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     value={resume.phone}
@@ -483,7 +542,9 @@ export default function EditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Location</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Location
+                  </label>
                   <input
                     type="text"
                     value={resume.location}
@@ -494,7 +555,9 @@ export default function EditorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Website / LinkedIn</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Website / LinkedIn
+                  </label>
                   <input
                     type="text"
                     value={resume.website}
@@ -506,7 +569,9 @@ export default function EditorPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-medium text-gray-600">Summary</label>
+                    <label className="block text-xs font-medium text-gray-600">
+                      Summary
+                    </label>
                     <button
                       onClick={() => handleAIGenerate("summary")}
                       disabled={aiLoading === "summary"}
@@ -519,8 +584,18 @@ export default function EditorPage() {
                         </>
                       ) : (
                         <>
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"
+                            />
                           </svg>
                           <span>AI Generate</span>
                         </>
@@ -541,14 +616,22 @@ export default function EditorPage() {
             {activeTab === "experience" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">Work Experience</h3>
-                  <button onClick={addWorkExperience} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Work Experience
+                  </h3>
+                  <button
+                    onClick={addWorkExperience}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
                     + Add Experience
                   </button>
                 </div>
 
                 {resume.workExperiences.map((work, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3 relative">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 space-y-3 relative"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-gray-400">
                         Experience {index + 1}
@@ -564,22 +647,34 @@ export default function EditorPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Position / Title</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Position / Title
+                      </label>
                       <input
                         type="text"
                         value={work.position}
-                        onChange={(e) => updateWorkExperience(index, "position", e.target.value)}
+                        onChange={(e) =>
+                          updateWorkExperience(
+                            index,
+                            "position",
+                            e.target.value,
+                          )
+                        }
                         className="input-field"
                         placeholder="Software Engineer"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Company</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Company
+                      </label>
                       <input
                         type="text"
                         value={work.company}
-                        onChange={(e) => updateWorkExperience(index, "company", e.target.value)}
+                        onChange={(e) =>
+                          updateWorkExperience(index, "company", e.target.value)
+                        }
                         className="input-field"
                         placeholder="Google"
                       />
@@ -587,21 +682,37 @@ export default function EditorPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Start Date
+                        </label>
                         <input
                           type="text"
                           value={work.startDate}
-                          onChange={(e) => updateWorkExperience(index, "startDate", e.target.value)}
+                          onChange={(e) =>
+                            updateWorkExperience(
+                              index,
+                              "startDate",
+                              e.target.value,
+                            )
+                          }
                           className="input-field"
                           placeholder="Jan 2022"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          End Date
+                        </label>
                         <input
                           type="text"
                           value={work.endDate}
-                          onChange={(e) => updateWorkExperience(index, "endDate", e.target.value)}
+                          onChange={(e) =>
+                            updateWorkExperience(
+                              index,
+                              "endDate",
+                              e.target.value,
+                            )
+                          }
                           className="input-field"
                           placeholder="Present"
                         />
@@ -610,7 +721,9 @@ export default function EditorPage() {
 
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-medium text-gray-600">Description</label>
+                        <label className="block text-xs font-medium text-gray-600">
+                          Description
+                        </label>
                         {index === 0 && (
                           <button
                             onClick={() =>
@@ -630,10 +743,24 @@ export default function EditorPage() {
                               </>
                             ) : (
                               <>
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+                                <svg
+                                  className="w-3.5 h-3.5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"
+                                  />
                                 </svg>
-                                <span>{work.description ? "AI Improve" : "AI Generate"}</span>
+                                <span>
+                                  {work.description
+                                    ? "AI Improve"
+                                    : "AI Generate"}
+                                </span>
                               </>
                             )}
                           </button>
@@ -641,7 +768,13 @@ export default function EditorPage() {
                       </div>
                       <textarea
                         value={work.description}
-                        onChange={(e) => updateWorkExperience(index, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateWorkExperience(
+                            index,
+                            "description",
+                            e.target.value,
+                          )
+                        }
                         className="textarea-field"
                         rows={4}
                         placeholder="Describe your responsibilities and achievements..."
@@ -655,14 +788,22 @@ export default function EditorPage() {
             {activeTab === "education" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">Education</h3>
-                  <button onClick={addEducation} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Education
+                  </h3>
+                  <button
+                    onClick={addEducation}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
                     + Add Education
                   </button>
                 </div>
 
                 {resume.educations.map((edu, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 space-y-3"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-gray-400">
                         Education {index + 1}
@@ -678,33 +819,45 @@ export default function EditorPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">School / University</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        School / University
+                      </label>
                       <input
                         type="text"
                         value={edu.school}
-                        onChange={(e) => updateEducation(index, "school", e.target.value)}
+                        onChange={(e) =>
+                          updateEducation(index, "school", e.target.value)
+                        }
                         className="input-field"
                         placeholder="Stanford University"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Degree</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Degree
+                      </label>
                       <input
                         type="text"
                         value={edu.degree}
-                        onChange={(e) => updateEducation(index, "degree", e.target.value)}
+                        onChange={(e) =>
+                          updateEducation(index, "degree", e.target.value)
+                        }
                         className="input-field"
                         placeholder="Bachelor of Science"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Field of Study</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Field of Study
+                      </label>
                       <input
                         type="text"
                         value={edu.field}
-                        onChange={(e) => updateEducation(index, "field", e.target.value)}
+                        onChange={(e) =>
+                          updateEducation(index, "field", e.target.value)
+                        }
                         className="input-field"
                         placeholder="Computer Science"
                       />
@@ -712,21 +865,29 @@ export default function EditorPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Start Date
+                        </label>
                         <input
                           type="text"
                           value={edu.startDate}
-                          onChange={(e) => updateEducation(index, "startDate", e.target.value)}
+                          onChange={(e) =>
+                            updateEducation(index, "startDate", e.target.value)
+                          }
                           className="input-field"
                           placeholder="Sep 2018"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          End Date
+                        </label>
                         <input
                           type="text"
                           value={edu.endDate}
-                          onChange={(e) => updateEducation(index, "endDate", e.target.value)}
+                          onChange={(e) =>
+                            updateEducation(index, "endDate", e.target.value)
+                          }
                           className="input-field"
                           placeholder="Jun 2022"
                         />
@@ -740,7 +901,9 @@ export default function EditorPage() {
             {activeTab === "skills" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">Skills</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Skills
+                  </h3>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleAIGenerate("skills")}
@@ -754,14 +917,27 @@ export default function EditorPage() {
                         </>
                       ) : (
                         <>
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"
+                            />
                           </svg>
                           <span>AI Suggest</span>
                         </>
                       )}
                     </button>
-                    <button onClick={addSkill} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                    <button
+                      onClick={addSkill}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
                       + Add Skill
                     </button>
                   </div>
@@ -782,8 +958,18 @@ export default function EditorPage() {
                           onClick={() => removeSkill(index)}
                           className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       )}
@@ -796,14 +982,22 @@ export default function EditorPage() {
             {activeTab === "projects" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">Projects</h3>
-                  <button onClick={addProject} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Projects
+                  </h3>
+                  <button
+                    onClick={addProject}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
                     + Add Project
                   </button>
                 </div>
 
                 {resume.projects.map((project, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 space-y-3"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-gray-400">
                         Project {index + 1}
@@ -819,32 +1013,44 @@ export default function EditorPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Project Name</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Project Name
+                      </label>
                       <input
                         type="text"
                         value={project.name}
-                        onChange={(e) => updateProject(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateProject(index, "name", e.target.value)
+                        }
                         className="input-field"
                         placeholder="E-Commerce Platform"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">URL</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        URL
+                      </label>
                       <input
                         type="text"
                         value={project.url}
-                        onChange={(e) => updateProject(index, "url", e.target.value)}
+                        onChange={(e) =>
+                          updateProject(index, "url", e.target.value)
+                        }
                         className="input-field"
                         placeholder="github.com/username/project"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Description
+                      </label>
                       <textarea
                         value={project.description}
-                        onChange={(e) => updateProject(index, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateProject(index, "description", e.target.value)
+                        }
                         className="textarea-field"
                         rows={3}
                         placeholder="Describe the project, technologies used, and your contributions..."
@@ -864,7 +1070,10 @@ export default function EditorPage() {
               className="bg-white shadow-lg rounded-sm mx-auto p-8"
               style={{ minHeight: "1056px", width: "100%" }}
             >
-              <TemplateRenderer resume={resume} templateId={resume.templateId} />
+              <TemplateRenderer
+                resume={resume}
+                templateId={resume.templateId}
+              />
             </div>
           </div>
         </div>
