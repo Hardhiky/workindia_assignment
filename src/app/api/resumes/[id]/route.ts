@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const resume = await prisma.resume.findUnique({
       where: { id },
@@ -32,10 +32,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const existing = await prisma.resume.findUnique({ where: { id } });
@@ -88,7 +88,7 @@ export async function PUT(
                   description: string;
                   sortOrder: number;
                 },
-                i: number
+                i: number,
               ) => ({
                 resumeId: id,
                 company: w.company || "",
@@ -97,7 +97,7 @@ export async function PUT(
                 endDate: w.endDate || "",
                 description: w.description || "",
                 sortOrder: w.sortOrder ?? i,
-              })
+              }),
             ),
           });
         }
@@ -117,7 +117,7 @@ export async function PUT(
                   endDate: string;
                   sortOrder: number;
                 },
-                i: number
+                i: number,
               ) => ({
                 resumeId: id,
                 school: e.school || "",
@@ -126,7 +126,7 @@ export async function PUT(
                 startDate: e.startDate || "",
                 endDate: e.endDate || "",
                 sortOrder: e.sortOrder ?? i,
-              })
+              }),
             ),
           });
         }
@@ -141,7 +141,7 @@ export async function PUT(
                 resumeId: id,
                 name: s.name || "",
                 sortOrder: s.sortOrder ?? i,
-              })
+              }),
             ),
           });
         }
@@ -159,14 +159,14 @@ export async function PUT(
                   url: string;
                   sortOrder: number;
                 },
-                i: number
+                i: number,
               ) => ({
                 resumeId: id,
                 name: p.name || "",
                 description: p.description || "",
                 url: p.url || "",
                 sortOrder: p.sortOrder ?? i,
-              })
+              }),
             ),
           });
         }
@@ -193,10 +193,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const existing = await prisma.resume.findUnique({ where: { id } });
 
