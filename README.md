@@ -8,7 +8,7 @@ A full-stack web application where users can create, edit, and download professi
 - **Backend:** Next.js API Routes
 - **Database:** SQLite via Prisma ORM
 - **PDF Generation:** html2canvas + jsPDF
-- **AI Assistance:** OpenAI API (with built-in fallback when no API key is configured)
+- **AI Assistance:** Google Gemini API - free tier (with built-in fallback when no API key is configured)
 - **Language:** TypeScript
 
 ## Features Implemented
@@ -44,7 +44,7 @@ A full-stack web application where users can create, edit, and download professi
 - **Generate Summary:** Creates a professional summary based on the user's name, role, and skills
 - **Generate / Improve Work Experience:** Writes or enhances job descriptions with action verbs and quantifiable achievements
 - **Suggest Skills:** Recommends relevant skills based on the user's field of study and job title
-- Works with OpenAI API when a key is provided
+- Works with Google Gemini API (free tier) when a key is provided
 - Falls back to a built-in content generator when no API key is configured, so the feature always works
 
 ### Authentication
@@ -76,7 +76,7 @@ npm install
 cp .env.example .env
 ```
 
-4. (Optional) Add your OpenAI API key to `.env` if you want AI features to use the real API. If left blank, the built-in fallback generator handles all AI requests.
+4. (Optional) Add your Google Gemini API key to `.env` if you want AI features to use the real API. Get a free key at https://aistudio.google.com/apikey. If left blank, the built-in fallback generator handles all AI requests.
 
 5. Run the Prisma migration to create the SQLite database:
 ```
