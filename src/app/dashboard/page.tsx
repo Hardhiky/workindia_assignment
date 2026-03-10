@@ -33,12 +33,14 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
-      return;
     }
+  }, [user, loading, router]);
+
+  useEffect(() => {
     if (user) {
       fetchResumes();
     }
-  }, [user, loading, router, fetchResumes]);
+  }, [user, fetchResumes]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this resume?")) return;
@@ -63,7 +65,13 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

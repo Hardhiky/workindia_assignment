@@ -56,12 +56,14 @@ export default function EditorPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
-      return;
     }
+  }, [user, loading, router]);
+
+  useEffect(() => {
     if (user && resumeId) {
       fetchResume();
     }
-  }, [user, loading, router, resumeId, fetchResume]);
+  }, [user, resumeId, fetchResume]);
 
   const saveResume = useCallback(
     async (data: ResumeData) => {
@@ -338,7 +340,13 @@ export default function EditorPage() {
     );
   }
 
-  if (!user || !resume) return null;
+  if (!user || !resume) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const currentTemplate = TEMPLATES.find((t) => t.id === resume.templateId);
 

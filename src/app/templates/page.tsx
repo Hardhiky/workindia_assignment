@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import Navbar from "@/components/Navbar";
@@ -12,19 +12,22 @@ export default function TemplatesPage() {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
-  const [selectedPreview, setSelectedPreview] = useState<TemplateInfo | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState<TemplateInfo | null>(
+    null,
+  );
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
-  }
-
-  if (!user) {
-    router.push("/");
-    return null;
   }
 
   const handleSelectTemplate = async (template: TemplateInfo) => {
@@ -75,7 +78,9 @@ export default function TemplatesPage() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Choose a Template</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Choose a Template
+          </h1>
           <p className="mt-1 text-gray-500">
             Select a template to start building your resume
           </p>
@@ -134,7 +139,9 @@ export default function TemplatesPage() {
                     {template.description}
                   </p>
                   <div className="mt-3">
-                    <p className="text-xs text-gray-400 font-medium mb-1">SECTIONS</p>
+                    <p className="text-xs text-gray-400 font-medium mb-1">
+                      SECTIONS
+                    </p>
                     <div className="flex flex-wrap gap-1">
                       {template.sectionOrder
                         .filter((s) => s !== "header")
@@ -146,8 +153,8 @@ export default function TemplatesPage() {
                             {section === "workExperiences"
                               ? "Experience"
                               : section === "educations"
-                              ? "Education"
-                              : section}
+                                ? "Education"
+                                : section}
                           </span>
                         ))}
                     </div>
@@ -164,8 +171,8 @@ export default function TemplatesPage() {
                     {creating
                       ? "Creating..."
                       : isLocked
-                      ? "Unlock with Premium"
-                      : "Use This Template"}
+                        ? "Unlock with Premium"
+                        : "Use This Template"}
                   </button>
                 </div>
               </div>
@@ -185,12 +192,14 @@ export default function TemplatesPage() {
               your account to unlock all premium templates and features.
             </p>
             <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-200">
-              <h3 className="font-semibold text-amber-800">
-                Premium Benefits
-              </h3>
+              <h3 className="font-semibold text-amber-800">Premium Benefits</h3>
               <ul className="mt-2 space-y-2 text-sm text-amber-700">
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -200,7 +209,11 @@ export default function TemplatesPage() {
                   Access to all premium templates
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -210,7 +223,11 @@ export default function TemplatesPage() {
                   Exclusive layouts and designs
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
