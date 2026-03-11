@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -38,27 +39,27 @@ model Resume {
 }
 
 model WorkExperience {
-  id          String  @id @default(uuid())
+  id          String @id @default(uuid())
   resumeId    String
-  company     String  @default("")
-  position    String  @default("")
-  startDate   String  @default("")
-  endDate     String  @default("")
-  description String  @default("")
-  sortOrder   Int     @default(0)
-  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  company     String @default("")
+  position    String @default("")
+  startDate   String @default("")
+  endDate     String @default("")
+  description String @default("")
+  sortOrder   Int    @default(0)
+  resume      Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model Education {
-  id         String  @id @default(uuid())
-  resumeId   String
-  school     String  @default("")
-  degree     String  @default("")
-  field      String  @default("")
-  startDate  String  @default("")
-  endDate    String  @default("")
-  sortOrder  Int     @default(0)
-  resume     Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  id        String @id @default(uuid())
+  resumeId  String
+  school    String @default("")
+  degree    String @default("")
+  field     String @default("")
+  startDate String @default("")
+  endDate   String @default("")
+  sortOrder Int    @default(0)
+  resume    Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model Skill {
